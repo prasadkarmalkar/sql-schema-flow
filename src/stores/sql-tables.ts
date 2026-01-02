@@ -1,4 +1,4 @@
-import type { Edge, Node } from '@xyflow/react';
+import { addEdge, applyEdgeChanges, applyNodeChanges, type Edge, type Node, type OnConnect, type OnNodesChange, type OnEdgesChange } from '@xyflow/react';
 import { create } from 'zustand';
 
 type SQLTablesStoreType = {
@@ -6,11 +6,17 @@ type SQLTablesStoreType = {
     edges: Edge[];
     addTable: (table: Node) => void;
     addEdge: (edge: Edge) => void;
+    onNodesChange: OnNodesChange;
+    onEdgesChange: OnEdgesChange;
+    onConnect: OnConnect;
 }
 
 export const useSQLTables = create<SQLTablesStoreType>((set) => ({
-    nodes: [],
-    edges: [],
+    nodes: [{ id: 'n1', type: 'tableNode', position: { x: 50, y: 50 }, data: { label: 'Node 1' }, }],
+    edges: [{ id: 'n1-n2', source: 'n1', target: 'n2' }],
     addTable: (table: Node) => set((state) => ({ nodes: [...state.nodes, table] })),
     addEdge: (edge: Edge) => set((state) => ({ edges: [...state.edges, edge] })),
+    onNodesChange: (changes) => set((state) => ({ nodes: applyNodeChanges(changes, state.nodes) })),
+    onEdgesChange: (changes) => set((state) => ({ edges: applyEdgeChanges(changes, state.edges) })),
+    onConnect: (connection) => set((state) => ({ edges: addEdge(connection, state.edges) })),
 }));

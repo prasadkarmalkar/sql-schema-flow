@@ -1,35 +1,26 @@
-import { ReactFlow, applyNodeChanges, applyEdgeChanges, addEdge, Background, BackgroundVariant, Controls } from '@xyflow/react';
+import { ReactFlow, Background, BackgroundVariant, Controls } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './App.css'
-import { useCallback, useState } from 'react';
 import TableNode from './components/TableNode';
 import { Button } from './components/ui/button';
 import { Table2 } from 'lucide-react';
+import { useSQLTables } from './stores/sql-tables';
 
-const initialNodes = [
-  { id: 'n1', type: 'tableNode', position: { x: 50, y: 50 }, data: { label: 'Node 1' }, },
-];
-const initialEdges = [{ id: 'n1-n2', source: 'n1', target: 'n2' }];
 const nodeTypes = {
   tableNode: TableNode,
 };
 function App() {
+  const {nodes, edges, addTable, onNodesChange, onEdgesChange, onConnect} = useSQLTables();
 
-  const [nodes, setNodes] = useState(initialNodes);
-  const [edges, setEdges] = useState(initialEdges);
-
-  const onNodesChange = useCallback(
-    (changes) => setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
-    [],
-  );
-  const onEdgesChange = useCallback(
-    (changes) => setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
-    [],
-  );
-  const onConnect = useCallback(
-    (params) => setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
-    [],
-  );
+  const handleAddTable = () => {
+    const newTable = {
+      id: `table-${nodes.length + 1}`,
+      type: 'tableNode',
+      position: { x: Math.random() * 400, y: Math.random() * 400 },
+      data: { label: `Table${nodes.length + 1}` },
+    };
+    addTable(newTable);
+  }
 
   return (
     <>
@@ -41,14 +32,13 @@ function App() {
          onNodesChange={onNodesChange}
          onEdgesChange={onEdgesChange}
          onConnect={onConnect}
-         defaultZoom={1}
          minZoom={0.2}
          maxZoom={2}
          >
           <Controls />
           <Background variant={BackgroundVariant.Dots} />
         </ReactFlow>
-        <Button className='absolute top-2 left-2'><Table2 />Add Table</Button>
+        <Button className='absolute top-2 left-2' onClick={handleAddTable}><Table2 />Add Table</Button>
       </div>
     </>
   )

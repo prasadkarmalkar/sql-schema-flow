@@ -29,6 +29,7 @@ const TableNode = (props) => {
         name='tableName'
         placeholder='Table Name'
         className='text-center mb-4'
+        value={props.data.label}
       />
       <div className='space-y-3 flex items-center gap-2'>
         <Input
