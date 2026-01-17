@@ -22,6 +22,10 @@ function App() {
     addTable(newTable);
   }
 
+  const generateSQL = () => {
+    
+  };
+
   return (
     <>
       <div style={{ width: '100%', height: '100vh' }}>
@@ -39,6 +43,7 @@ function App() {
           <Background variant={BackgroundVariant.Dots} />
         </ReactFlow>
         <Button className='absolute top-2 left-2' onClick={handleAddTable}><Table2 />Add Table</Button>
+        <Button className='absolute top-2 left-36' variant='default' onClick={generateSQL}>Generate SQL</Button>
       </div>
     </>
   )

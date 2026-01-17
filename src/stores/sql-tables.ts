@@ -12,8 +12,8 @@ type SQLTablesStoreType = {
 }
 
 export const useSQLTables = create<SQLTablesStoreType>((set) => ({
-    nodes: [{ id: 'n1', type: 'tableNode', position: { x: 50, y: 50 }, data: { label: 'Node 1' }, }],
-    edges: [{ id: 'n1-n2', source: 'n1', target: 'n2' }],
+    nodes: [],
+    edges: [],
     addTable: (table: Node) => set((state) => ({ nodes: [...state.nodes, table] })),
     addEdge: (edge: Edge) => set((state) => ({ edges: [...state.edges, edge] })),
     onNodesChange: (changes) => set((state) => ({ nodes: applyNodeChanges(changes, state.nodes) })),
