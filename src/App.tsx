@@ -14,16 +14,16 @@ function App() {
 
   const handleAddTable = () => {
     const newTable = {
-      id: `table-${nodes.length + 1}`,
+      id: `table-${Date.now()}`,
       type: 'tableNode',
       position: { x: Math.random() * 400, y: Math.random() * 400 },
-      data: { label: `Table${nodes.length + 1}` },
+      data: { label: `Table${nodes.length + 1}`, columns: [] },
     };
     addTable(newTable);
   }
 
   const generateSQL = () => {
-    
+
   };
 
   return (

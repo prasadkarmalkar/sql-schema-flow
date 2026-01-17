@@ -9,44 +9,40 @@ import {
   SelectValue,
 } from "./ui/select";
 import { SQLDataTypes } from "../data/data";
-import { useState } from 'react';
 import { Button } from './ui/button';
 import { PlusIcon, Trash } from 'lucide-react';
+import { useSQLTables, type Column } from '../stores/sql-tables';
+import { useEffect } from 'react';
 
-type Column = {
-  id: string;
-  name: string;
-  dataType: string;
-  size?: string;
-};
+const TableNode = (props: { data: { label: string }, id: string }) => {
+  const { addColumn, removeColumn, updateColumn, getTableColumns, updateTableName } = useSQLTables();
+  const columns = getTableColumns(props.id);
 
-const TableNode = (props: { data: { label: string } }) => {
-  const [columns, setColumns] = useState<Column[]>([
-    { id: '1', name: '', dataType: '', size: '' }
-  ]);
+  // Initialize with one empty column if no columns exist
+  useEffect(() => {
+    if (columns.length === 0) {
+      addColumn(props.id);
+    }
+  }, []);
 
-  const addColumn = () => {
-    const newColumn: Column = {
-      id: Date.now().toString(),
-      name: '',
-      dataType: '',
-      size: ''
-    };
-    setColumns([...columns, newColumn]);
+  const handleAddColumn = () => {
+    addColumn(props.id);
   };
 
-  const removeColumn = (id: string) => {
-    setColumns(columns.filter(column => column.id !== id));
+  const handleRemoveColumn = (columnId: string) => {
+    removeColumn(props.id, columnId);
   };
 
-  const updateColumn = (id: string, field: keyof Column, value: string) => {
-    setColumns(columns.map(column => 
-      column.id === id ? { ...column, [field]: value } : column
-    ));
+  const handleUpdateColumn = (columnId: string, field: keyof Column, value: string) => {
+    updateColumn(props.id, columnId, field, value);
   };
 
-  const handleDataTypeChange = (id: string, value: string) => {
-    updateColumn(id, 'dataType', value);
+  const handleDataTypeChange = (columnId: string, value: string) => {
+    handleUpdateColumn(columnId, 'dataType', value);
+  };
+
+  const handleTableNameChange = (name: string) => {
+    updateTableName(props.id, name);
   };
 
   const getDataTypeSupportsSize = (dataType: string): boolean => {
@@ -61,6 +57,7 @@ const TableNode = (props: { data: { label: string } }) => {
         placeholder='Table Name'
         className='text-center mb-4'
         value={props.data.label}
+        onChange={(e) => handleTableNameChange(e.target.value)}
       />
       <div className='space-y-2'>
         {columns.map((column, index) => (
@@ -71,7 +68,7 @@ const TableNode = (props: { data: { label: string } }) => {
               placeholder='Column Name'
               className='flex-1'
               value={column.name}
-              onChange={(e) => updateColumn(column.id, 'name', e.target.value)}
+              onChange={(e) => handleUpdateColumn(column.id, 'name', e.target.value)}
             />
             <Select 
               value={column.dataType} 
@@ -101,11 +98,11 @@ const TableNode = (props: { data: { label: string } }) => {
                 placeholder='Size'
                 className='w-16'
                 value={column.size}
-                onChange={(e) => updateColumn(column.id, 'size', e.target.value)}
+                onChange={(e) => handleUpdateColumn(column.id, 'size', e.target.value)}
               />
             )}
             {index === columns.length - 1 ? (
-              <Button variant="outline" size="icon" onClick={addColumn} aria-label="Add column" className='cursor-pointer'>
+              <Button variant="outline" size="icon" onClick={handleAddColumn} aria-label="Add column" className='cursor-pointer'>
                 <PlusIcon className='h-4 w-4' />
               </Button>
             ) : (
@@ -113,7 +110,7 @@ const TableNode = (props: { data: { label: string } }) => {
                 variant="outline"
                 className='cursor-pointer' 
                 size="icon" 
-                onClick={() => removeColumn(column.id)} 
+                onClick={() => handleRemoveColumn(column.id)} 
                 aria-label="Remove column"
               >
                 <Trash className='h-4 w-4 text-red-500' />
