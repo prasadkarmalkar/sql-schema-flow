@@ -17,6 +17,7 @@ type SQLTablesStoreType = {
     onEdgesChange: OnEdgesChange;
     onConnect: OnConnect;
     addColumn: (tableId: string) => void;
+    removeTable: (tableId: string) => void;
     removeColumn: (tableId: string, columnId: string) => void;
     updateColumn: (tableId: string, columnId: string, field: keyof Column, value: string) => void;
     getTableColumns: (tableId: string) => Column[];
@@ -27,6 +28,7 @@ export const useSQLTables = create<SQLTablesStoreType>((set, get) => ({
     nodes: [],
     edges: [],
     addTable: (table: Node) => set((state) => ({ nodes: [...state.nodes, table] })),
+    removeTable: (tableId: string) => set((state) => ({ nodes: state.nodes.filter(node => node.id !== tableId) })),
     addEdge: (edge: Edge) => set((state) => ({ edges: [...state.edges, edge] })),
     onNodesChange: (changes) => set((state) => ({ nodes: applyNodeChanges(changes, state.nodes) })),
     onEdgesChange: (changes) => set((state) => ({ edges: applyEdgeChanges(changes, state.edges) })),
