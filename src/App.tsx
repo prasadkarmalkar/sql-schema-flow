@@ -4,7 +4,7 @@ import './App.css'
 import TableNode from './components/TableNode';
 import { Button } from './components/ui/button';
 import { Table2 } from 'lucide-react';
-import { useSQLTables } from './stores/sql-tables';
+import { useSQLTables, type Column } from './stores/sql-tables';
 
 const nodeTypes = {
   tableNode: TableNode,
@@ -23,7 +23,25 @@ function App() {
   }
 
   const generateSQL = () => {
-
+    let generatedQuery = '';
+    nodes.forEach(node => {
+      const tableName = node.data.label;
+      const columns = Array.isArray(node.data.columns) ? node.data.columns : [];
+      let createTableQuery = `CREATE TABLE ${tableName} (\n`;
+      columns.forEach((col: Column, index: number) => {
+        createTableQuery += `  ${col.name} ${col.dataType}`;
+        if (col.size) {
+          createTableQuery += `(${col.size})`;
+        }
+        if (index < columns.length - 1) {
+          createTableQuery += ',\n';
+        } else {
+          createTableQuery += '\n';
+        }
+      });
+      createTableQuery += ');';
+      generatedQuery += createTableQuery + '\n\n';
+    });
   };
 
   return (
