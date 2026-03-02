@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Input } from "./ui/input";
 import {
   Select,
@@ -10,9 +11,10 @@ import {
 } from "./ui/select";
 import { SQLDataTypes } from "../data/data";
 import { useSQLTables, type Column } from "../stores/sql-tables";
-import { Settings, Key, Link, Database, Info } from "lucide-react";
+import { Settings, Key, Link, Database, Info, ChevronLeft, ChevronRight } from "lucide-react";
 
 const RightSidebar = () => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const { 
     selectedItem, 
     getSelectedTable, 
@@ -40,8 +42,22 @@ const RightSidebar = () => {
 
   if (!selectedItem.type) {
     return (
-      <div className="w-80 h-full bg-neutral-50 dark:bg-card border-l border-neutral-200 dark:border-border flex flex-col">
-        <div className="flex-1 flex items-center justify-center text-center p-6">
+      <div className={`relative h-full bg-neutral-50 dark:bg-card border-l border-neutral-200 dark:border-border flex flex-col transition-all duration-300 ${isCollapsed ? 'w-12' : 'w-80'}`}>
+        {/* Collapse Button */}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="absolute top-3.5 -left-3 z-10 bg-white dark:bg-card border border-neutral-200 dark:border-border rounded-full p-1.5 hover:bg-neutral-100 dark:hover:bg-background shadow-sm transition-colors"
+          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isCollapsed ? (
+            <ChevronLeft className="h-3.5 w-3.5 text-muted-foreground" />
+          ) : (
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+          )}
+        </button>
+
+        {!isCollapsed && (
+          <div className="flex-1 flex items-center justify-center text-center p-6">
           <div>
             <Settings className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
             <h3 className="text-sm font-medium text-foreground mb-1">No Selection</h3>
@@ -50,6 +66,7 @@ const RightSidebar = () => {
             </p>
           </div>
         </div>
+        )}
       </div>
     );
   }
@@ -57,9 +74,24 @@ const RightSidebar = () => {
   // Table Properties View
   if (selectedItem.type === 'table' && selectedTable) {
     return (
-      <div className="w-80 h-full bg-neutral-50 dark:bg-card border-l border-neutral-200 dark:border-border flex flex-col">
-        {/* Header */}
-        <div className="p-4 border-b border-neutral-200 dark:border-border">
+      <div className={`relative h-full bg-neutral-50 dark:bg-card border-l border-neutral-200 dark:border-border flex flex-col transition-all duration-300 ${isCollapsed ? 'w-12' : 'w-80'}`}>
+        {/* Collapse Button */}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="absolute top-3.5 -left-3 z-10 bg-white dark:bg-card border border-neutral-200 dark:border-border rounded-full p-1.5 hover:bg-neutral-100 dark:hover:bg-background shadow-sm transition-colors"
+          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isCollapsed ? (
+            <ChevronLeft className="h-3.5 w-3.5 text-muted-foreground" />
+          ) : (
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+          )}
+        </button>
+
+        {!isCollapsed && (
+          <>
+            {/* Header */}
+            <div className="p-4 border-b border-neutral-200 dark:border-border">
           <div className="flex items-center gap-2">
             <Database className="h-5 w-5 text-primary" />
             <h2 className="text-table-title text-foreground">Table Properties</h2>
@@ -121,6 +153,8 @@ const RightSidebar = () => {
             </div>
           </div>
         </div>
+          </>
+        )}
       </div>
     );
   }
@@ -128,9 +162,24 @@ const RightSidebar = () => {
   // Column Properties View
   if (selectedItem.type === 'column' && selectedColumn) {
     return (
-      <div className="w-80 h-full bg-neutral-50 dark:bg-card border-l border-neutral-200 dark:border-border flex flex-col">
-        {/* Header */}
-        <div className="p-4 border-b border-neutral-200 dark:border-border">
+      <div className={`relative h-full bg-neutral-50 dark:bg-card border-l border-neutral-200 dark:border-border flex flex-col transition-all duration-300 ${isCollapsed ? 'w-12' : 'w-80'}`}>
+        {/* Collapse Button */}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="absolute top-4 -left-3 z-10 bg-white dark:bg-card border border-neutral-200 dark:border-border rounded-full p-1.5 hover:bg-neutral-100 dark:hover:bg-background shadow-sm transition-colors"
+          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isCollapsed ? (
+            <ChevronLeft className="h-3.5 w-3.5 text-muted-foreground" />
+          ) : (
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+          )}
+        </button>
+
+        {!isCollapsed && (
+          <>
+            {/* Header */}
+            <div className="p-4 border-b border-neutral-200 dark:border-border">
           <div className="flex items-center gap-2">
             <Settings className="h-5 w-5 text-primary" />
             <h2 className="text-table-title text-foreground">Column Properties</h2>
@@ -321,8 +370,8 @@ const RightSidebar = () => {
               className="w-full min-h-16 px-3 py-2 text-sm bg-white dark:bg-background border border-neutral-300 dark:border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-        </div>
-      </div>
+        </div>          </>
+        )}      </div>
     );
   }
 

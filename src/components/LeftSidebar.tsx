@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Input } from "./ui/input";
-import { Search, Table2, Layers } from "lucide-react";
+import { Search, Table2, Layers, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSQLTables } from "../stores/sql-tables";
 import { useReactFlow } from "@xyflow/react";
 
 const LeftSidebar = () => {
   const { nodes, setSelectedItem } = useSQLTables();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const reactFlow = useReactFlow();
 
   const filteredTables = nodes.filter((node) => {
@@ -34,13 +35,28 @@ const LeftSidebar = () => {
   };
 
   return (
-    <div className="w-64 h-full bg-neutral-50 dark:bg-card border-r border-neutral-200 dark:border-border flex flex-col">
-      {/* Header */}
-      <div className="p-4 border-b border-neutral-200 dark:border-border">
+    <div className={`relative h-full bg-neutral-50 dark:bg-card border-r border-neutral-200 dark:border-border flex flex-col transition-all duration-300 ${isCollapsed ? 'w-12' : 'w-64'}`}>
+      {/* Collapse Button */}
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="absolute top-3.5 -right-3 z-10 bg-white dark:bg-card border border-neutral-200 dark:border-border rounded-full p-1.5 hover:bg-neutral-100 dark:hover:bg-background shadow-sm transition-colors"
+        title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+      >
+        {isCollapsed ? (
+          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+        ) : (
+          <ChevronLeft className="h-3.5 w-3.5 text-muted-foreground" />
+        )}
+      </button>
+
+      {!isCollapsed && (
+        <>
+          {/* Header */}
+          <div className="p-4 border-b border-neutral-200 dark:border-border">
         <div className="flex items-center gap-2 mb-3">
           <Layers className="h-5 w-5 text-primary" />
           <h2 className="text-table-title text-foreground">Tables</h2>
-          <span className="ml-auto text-xs text-muted-foreground bg-neutral-200 dark:bg-muted px-2 py-0.5 rounded-full">
+          <span className="ml-auto mr-2 text-xs text-muted-foreground bg-neutral-200 dark:bg-muted px-2 py-0.5 rounded-full">
             {nodes.length}
           </span>
         </div>
@@ -95,6 +111,8 @@ const LeftSidebar = () => {
           Press <kbd className="px-1.5 py-0.5 bg-white dark:bg-card border border-neutral-300 dark:border-border rounded text-xs font-mono">A</kbd> to add table
         </p>
       </div>
+        </>
+      )}
     </div>
   );
 };

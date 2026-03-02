@@ -4,7 +4,7 @@ import {
   Table2, 
   Download, 
   Moon, 
-  Sun, 
+  Sun,
   Sparkles,
   GitBranch
 } from "lucide-react";
