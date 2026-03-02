@@ -135,11 +135,11 @@ const TopNavBar = () => {
   };
 
   return (
-    <div className="h-14 bg-neutral-900 dark:bg-[rgb(var(--background))] border-b border-neutral-700 dark:border-[rgb(var(--border))] flex items-center justify-between px-4 shadow-md">
+    <div className="py-3 bg-neutral-900  border-b border-neutral-700 flex items-center justify-between px-4 shadow-md">
       {/* Left section */}
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
-          <GitBranch className="h-6 w-6 text-white" />
+          <GitBranch className="size-6 text-white" />
           <span className="text-app-title text-white dark:text-foreground">SQL Schema Flow</span>
         </div>
         
@@ -161,7 +161,7 @@ const TopNavBar = () => {
         ) : (
           <button
             onClick={() => setIsEditingName(true)}
-            className="text-sm text-neutral-300 dark:text-muted-foreground hover:text-white dark:hover:text-foreground px-2 py-1 rounded hover:bg-neutral-800 dark:hover:bg-muted transition-colors"
+            className="text-sm text-neutral-300 dark:text-muted-foreground hover:text-white dark:hover:text-foreground px-2 py-1 rounded hover:bg-neutral-800 dark:hover:bg-muted transition-colors cursor-pointer"
           >
             {projectName}
           </button>
@@ -173,7 +173,8 @@ const TopNavBar = () => {
         <Button
           onClick={handleAddTable}
           size="default"
-          className="bg-primary hover:bg-primary-600 text-white"
+          variant={'secondary'}
+          className="cursor-pointer"
         >
           <Table2 className="h-4 w-4" />
           Add Table
@@ -182,8 +183,8 @@ const TopNavBar = () => {
         <Button
           onClick={generateSQL}
           size="default"
-          variant="secondary"
-          className="bg-neutral-700 dark:bg-secondary hover:bg-neutral-600 dark:hover:bg-secondary/80 text-white dark:text-foreground"
+          variant="default"
+          className="cursor-pointer bg-green-500 hover:bg-green-600 text-white"
         >
           <Sparkles className="h-4 w-4" />
           Generate SQL
