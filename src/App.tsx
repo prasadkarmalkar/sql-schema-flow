@@ -3,92 +3,74 @@ import {
   Background,
   BackgroundVariant,
   Controls,
+  ReactFlowProvider,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import "./App.css";
 import TableNode from "./components/TableNode";
-import { Button } from "./components/ui/button";
-import { Table2 } from "lucide-react";
-import { useSQLTables, type Column } from "./stores/sql-tables";
+import TopNavBar from "./components/TopNavBar";
+import LeftSidebar from "./components/LeftSidebar";
+import RightSidebar from "./components/RightSidebar";
+import BottomDrawer from "./components/BottomDrawer";
+import { useSQLTables } from "./stores/sql-tables";
 
 const nodeTypes = {
   tableNode: TableNode,
 };
-function App() {
-  const { nodes, edges, addTable, onNodesChange, onEdgesChange, onConnect } =
+
+function AppContent() {
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect } =
     useSQLTables();
 
-  const handleAddTable = () => {
-    const newTable = {
-      id: `table-${Date.now()}`,
-      type: "tableNode",
-      position: { x: Math.random() * 400, y: Math.random() * 400 },
-      data: {
-        label: `Table${nodes.length + 1}`,
-        columns: [
-          {
-            id: Date.now().toString(),
-            name: "",
-            dataType: "",
-            size: "",
-          },
-        ],
-      },
-    };
-    addTable(newTable);
-  };
-
-  const generateSQL = () => {
-    let generatedQuery = "";
-    nodes.forEach((node) => {
-      const tableName = node.data.label;
-      const columns = Array.isArray(node.data.columns) ? node.data.columns : [];
-      let createTableQuery = `CREATE TABLE ${tableName} (\n`;
-      columns.forEach((col: Column, index: number) => {
-        createTableQuery += `  ${col.name} ${col.dataType}`;
-        if (col.size) {
-          createTableQuery += `(${col.size})`;
-        }
-        if (index < columns.length - 1) {
-          createTableQuery += ",\n";
-        } else {
-          createTableQuery += "\n";
-        }
-      });
-      createTableQuery += ");";
-      generatedQuery += createTableQuery + "\n\n";
-    });
-  };
 
   return (
-    <>
-      <div style={{ width: "100%", height: "100vh" }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          nodeTypes={nodeTypes}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          minZoom={0.2}
-          maxZoom={2}
-        >
-          <Controls />
-          <Background variant={BackgroundVariant.Dots} />
-        </ReactFlow>
-        <Button className='absolute top-2 left-2' onClick={handleAddTable}>
-          <Table2 />
-          Add Table
-        </Button>
-        <Button
-          className='absolute top-2 left-36'
-          variant='default'
-          onClick={generateSQL}
-        >
-          Generate SQL
-        </Button>
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-background">
+      {/* Top Navigation */}
+      <TopNavBar />
+  
+      {/* Main Content Area */}
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Left Sidebar - Tables List */}
+        <LeftSidebar />
+
+        {/* Canvas Area - ER Diagram */}
+        <div className="flex-1 relative">
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            nodeTypes={nodeTypes}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            minZoom={0.2}
+            maxZoom={2}
+            snapToGrid
+            snapGrid={[16, 16]}
+          >
+            <Controls 
+              position="bottom-right"
+            />
+            <Background 
+              variant={BackgroundVariant.Dots} 
+            />
+          </ReactFlow>
+        </div>
+
+        {/* Right Sidebar - Properties Panel */}
+        <RightSidebar />
+
+        {/* Bottom SQL Drawer */}
+        <BottomDrawer />
       </div>
-    </>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <ReactFlowProvider>
+      <AppContent />
+    </ReactFlowProvider>
   );
 }
 
