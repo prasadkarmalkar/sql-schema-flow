@@ -140,7 +140,7 @@ const TopNavBar = () => {
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <GitBranch className="size-6 text-white" />
-          <span className="text-app-title text-white dark:text-foreground">SQL Schema Flow</span>
+          <span className="text-app-title text-white">SQL Schema Flow</span>
         </div>
         
         {isEditingName ? (
@@ -161,7 +161,7 @@ const TopNavBar = () => {
         ) : (
           <button
             onClick={() => setIsEditingName(true)}
-            className="text-sm text-neutral-300 dark:text-muted-foreground hover:text-white dark:hover:text-foreground px-2 py-1 rounded hover:bg-neutral-800 dark:hover:bg-muted transition-colors cursor-pointer"
+            className="text-sm text-neutral-300 hover:text-white px-2 py-1 rounded hover:bg-neutral-800 transition-colors cursor-pointer"
           >
             {projectName}
           </button>
@@ -190,26 +190,26 @@ const TopNavBar = () => {
           Generate SQL
         </Button>
         
-        <div className="w-px h-6 bg-neutral-700 dark:bg-border mx-1" />
+        <div className="w-px h-6 bg-neutral-700 mx-1" />
         
         <Button
           onClick={handleExport}
           size="icon"
           variant="ghost"
-          className="text-neutral-300 dark:text-muted-foreground hover:text-white dark:hover:text-foreground hover:bg-neutral-800 dark:hover:bg-muted"
+          className="text-neutral-300 hover:text-white hover:bg-neutral-800"
           title="Export SQL"
         >
           <Download className="h-4 w-4" />
         </Button>
         
         
-        <div className="w-px h-6 bg-neutral-700 dark:bg-border mx-1" />
+        <div className="w-px h-6 bg-neutral-700 mx-1" />
         
         <Button
           onClick={toggleTheme}
           size="icon"
           variant="ghost"
-          className="text-neutral-300 dark:text-muted-foreground hover:text-white dark:hover:text-foreground hover:bg-neutral-800 dark:hover:bg-muted"
+          className="text-neutral-300 hover:text-white hover:bg-neutral-800"
           title="Toggle theme"
         >
           {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}

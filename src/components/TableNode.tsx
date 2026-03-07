@@ -101,7 +101,7 @@ const TableNode = (props: { data: { label: string }; id: string }) => {
     if (column.dataType.includes('TIME') || column.dataType === 'DATE') {
       return (
         <div title="Date/Time">
-          <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+          <Clock className="h-3.5 w-3.5 " />
         </div>
       );
     }
@@ -109,19 +109,19 @@ const TableNode = (props: { data: { label: string }; id: string }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-card rounded-xl border-2 border-neutral-200 dark:border-border shadow-lg hover:shadow-xl transition-shadow duration-200 min-w-80 max-w-96">
+    <div className="bg-white rounded-xl border-2 border-neutral-200 shadow-lg hover:shadow-xl transition-shadow duration-200 min-w-80 max-w-96">
       {/* Header */}
       <div 
-        className="bg-linear-to-r from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10 px-4 py-3 rounded-t-xl border-b border-neutral-200 dark:border-border flex items-center justify-between cursor-pointer group"
+        className="bg-linear-to-r from-primary/10 to-primary/5 px-4 py-3 rounded-t-xl border-b border-neutral-200 flex items-center justify-between cursor-pointer group"
         onClick={handleTableClick}
       >
         <div className="flex items-center gap-2 flex-1">
-          <GripVertical className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
+          <GripVertical className="h-4 w-4  opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
           <Input
             id='tableName'
             name='tableName'
             placeholder='Table Name'
-            className='flex-1 text-table-title font-semibold bg-transparent border-none shadow-none px-1 h-8 focus-visible:ring-1 focus-visible:ring-primary'
+            className='flex-1 font-semibold bg-transparent border-none shadow-none px-1 h-8 focus-visible:ring-1 focus-visible:ring-primary'
             value={props.data.label}
             onChange={(e) => handleTableNameChange(e.target.value)}
             onClick={(e) => e.stopPropagation()}
@@ -132,14 +132,14 @@ const TableNode = (props: { data: { label: string }; id: string }) => {
       {/* Columns */}
       <div className="p-3 space-y-1.5 max-h-96 overflow-y-auto">
         {columns.length === 0 ? (
-          <div className="text-center py-4 text-sm text-muted-foreground">
+          <div className="text-center py-4 text-sm ">
             No columns yet. Add one below.
           </div>
         ) : (
           columns.map((column) => (
             <div 
               key={column.id} 
-              className="flex items-center gap-2 p-2 rounded-lg hover:bg-neutral-50 dark:hover:bg-background border border-transparent hover:border-neutral-200 dark:hover:border-border transition-all cursor-pointer"
+              className="flex items-center gap-2 p-2 rounded-lg hover:bg-neutral-50 border border-transparent hover:border-neutral-200 transition-all cursor-pointer"
               onClick={() => handleColumnClick(column.id)}
             >
               {/* Column Icon */}
@@ -224,13 +224,13 @@ const TableNode = (props: { data: { label: string }; id: string }) => {
       </div>
 
       {/* Footer */}
-      <div className='flex items-center gap-2 p-3 pt-2 border-t border-neutral-200 dark:border-border bg-neutral-50 dark:bg-background rounded-b-xl'>
+      <div className='flex items-center gap-2 p-3 pt-2 border-t border-neutral-200 bg-neutral-50 rounded-b-xl'>
         <Button
           variant='outline'
           size='sm'
           onClick={handleAddColumn}
           aria-label='Add column'
-          className='flex-1 h-8 text-xs gap-1.5 border-neutral-300 dark:border-border hover:bg-white dark:hover:bg-card hover:border-primary'
+          className='flex-1 h-8 text-xs gap-1.5 border-neutral-300 hover:bg-white hover:border-primary'
         >
           <PlusIcon className='h-3.5 w-3.5' />
           Add Column
