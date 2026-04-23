@@ -17,6 +17,14 @@ export type Column = {
   description?: string;
 };
 
+export type TableNodeData = {
+  label: string;
+  columns?: Column[];
+  description?: string;
+};
+
+export type TableNode = Node<TableNodeData>;
+
 type SelectedItem = {
   type: 'table' | 'column' | null;
   tableId?: string;
@@ -24,16 +32,16 @@ type SelectedItem = {
 };
 
 type SQLTablesStoreType = {
-    nodes: Node[];
+    nodes: TableNode[];
     edges: Edge[];
     projectName: string;
     isDark: boolean;
     selectedItem: SelectedItem;
     isSQLDrawerOpen: boolean;
     generatedSQL: string;
-    addTable: (table: Node) => void;
+    addTable: (table: TableNode) => void;
     addEdge: (edge: Edge) => void;
-    onNodesChange: OnNodesChange;
+    onNodesChange: OnNodesChange<TableNode>;
     onEdgesChange: OnEdgesChange;
     onConnect: OnConnect;
     addColumn: (tableId: string) => void;
@@ -42,13 +50,15 @@ type SQLTablesStoreType = {
     updateColumn: (tableId: string, columnId: string, field: keyof Column, value: string | boolean) => void;
     getTableColumns: (tableId: string) => Column[];
     updateTableName: (tableId: string, name: string) => void;
+    updateTableDescription: (tableId: string, description: string) => void;
     setProjectName: (name: string) => void;
     toggleTheme: () => void;
     setSelectedItem: (item: SelectedItem) => void;
     toggleSQLDrawer: () => void;
     setGeneratedSQL: (sql: string) => void;
     getSelectedColumn: () => Column | null;
-    getSelectedTable: () => Node | null;
+    getSelectedTable: () => TableNode | null;
+    loadProject: (data: { nodes: TableNode[]; edges: Edge[]; projectName: string }) => void;
 }
 
 export const useSQLTables = create<SQLTablesStoreType>((set, get) => ({
@@ -60,7 +70,7 @@ export const useSQLTables = create<SQLTablesStoreType>((set, get) => ({
     isSQLDrawerOpen: false,
     generatedSQL: '',
     
-    addTable: (table: Node) => set((state) => ({ nodes: [...state.nodes, table] })),
+    addTable: (table: TableNode) => set((state) => ({ nodes: [...state.nodes, table] })),
     
     removeTable: (tableId: string) => set((state) => ({ 
       nodes: state.nodes.filter(node => node.id !== tableId),
@@ -74,7 +84,54 @@ export const useSQLTables = create<SQLTablesStoreType>((set, get) => ({
     
     onEdgesChange: (changes) => set((state) => ({ edges: applyEdgeChanges(changes, state.edges) })),
     
-    onConnect: (connection) => set((state) => ({ edges: addEdge(connection, state.edges) })),
+    onConnect: (connection) => set((state) => {
+      // Add the edge to the edges array
+      const newEdges = addEdge(connection, state.edges);
+      
+      // Update the target table's columns to mark foreign key relationships
+      const sourceTableId = connection.source;
+      const targetTableId = connection.target;
+      
+      let updatedNodes = state.nodes;
+      
+      if (sourceTableId && targetTableId) {
+        const sourceTable = state.nodes.find(n => n.id === sourceTableId);
+        const targetTable = state.nodes.find(n => n.id === targetTableId);
+
+        // Add column to source table to mark it as a foreign key referencing the target table.
+        if (sourceTable && targetTable) {
+          const targetPrimaryKeyColumn = targetTable.data.columns?.find(col => col.isPrimaryKey);
+          const newColumn: Column = {
+            id: Date.now().toString(),
+            name: `${targetTable.data.label}_id`,
+            dataType: 'INT', // Default data type for foreign keys
+            isForeignKey: true,
+            foreignKeyTable: targetTable.data.label,
+            foreignKeyColumn: targetPrimaryKeyColumn?.name || 'id'
+          }
+          
+          updatedNodes = state.nodes.map(node => {
+            if (node.id === sourceTableId) {
+              const currentColumns = node.data.columns || [];
+              return {
+                ...node,
+                data: {
+                  ...node.data,
+                  columns: [...currentColumns, newColumn]
+                }
+              };
+            }
+            return node;
+          });
+        }
+      }
+      
+      // Return the updated state (this is why return is needed!)
+      return { 
+        edges: newEdges,
+        nodes: updatedNodes
+      };
+    }),
     
     addColumn: (tableId: string) => set((state) => ({
       nodes: state.nodes.map(node => {
@@ -159,6 +216,15 @@ export const useSQLTables = create<SQLTablesStoreType>((set, get) => ({
         return node;
       })
     })),
+
+    updateTableDescription: (tableId: string, description: string) => set((state) => ({
+      nodes: state.nodes.map(node => {
+        if (node.id === tableId) {
+          return { ...node, data: { ...node.data, description } };
+        }
+        return node;
+      })
+    })),
     
     setProjectName: (name: string) => set({ projectName: name }),
     
@@ -193,5 +259,14 @@ export const useSQLTables = create<SQLTablesStoreType>((set, get) => ({
         return state.nodes.find(node => node.id === state.selectedItem.tableId) || null;
       }
       return null;
-    }
+    },
+
+    loadProject: (data) => set({
+      nodes: data.nodes,
+      edges: data.edges,
+      projectName: data.projectName,
+      selectedItem: { type: null },
+      isSQLDrawerOpen: false,
+      generatedSQL: '',
+    }),
 }));

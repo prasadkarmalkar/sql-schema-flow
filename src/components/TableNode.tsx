@@ -20,6 +20,7 @@ import {
   Shield
 } from "lucide-react";
 import { useSQLTables, type Column } from "../stores/sql-tables";
+import { Handle, Position } from "@xyflow/react";
 
 const TableNode = (props: { data: { label: string }; id: string }) => {
   const {
@@ -111,6 +112,20 @@ const TableNode = (props: { data: { label: string }; id: string }) => {
 
   return (
     <div className="bg-white rounded-xl border-2 border-neutral-200 shadow-lg hover:shadow-xl transition-shadow duration-200 min-w-80 max-w-96">
+      {/* Target Handle (Top) */}
+      <Handle 
+        type="target" 
+        position={Position.Top}
+        className='size-3.5! bg-blue-500!'
+      />
+      
+      {/* Source Handle (Bottom) */}
+      <Handle
+        type="source" 
+        position={Position.Bottom}
+        className='size-3.5! bg-green-500!'
+      />
+      
       {/* Header */}
       <div 
         className="bg-neutral-100 p-2 rounded-t-xl border-b border-neutral-400 group"

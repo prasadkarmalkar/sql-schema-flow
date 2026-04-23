@@ -6,10 +6,12 @@ import {
   Moon, 
   Sun,
   Sparkles,
-  GitBranch
+  GitBranch,
+  Upload,
+  Save
 } from "lucide-react";
 import { useSQLTables, type Column } from "../stores/sql-tables";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const TopNavBar = () => {
   const { 
@@ -19,12 +21,32 @@ const TopNavBar = () => {
     toggleTheme,
     addTable,
     nodes,
+    edges,
     toggleSQLDrawer,
-    setGeneratedSQL
+    setGeneratedSQL,
+    loadProject
   } = useSQLTables();
   
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(projectName);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync tempName when projectName changes externally
+  useEffect(() => {
+    if (!isEditingName) setTempName(projectName);
+  }, [projectName, isEditingName]);
+
+  // Keyboard shortcut ⌘J / Ctrl+J to toggle SQL drawer
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'j') {
+        e.preventDefault();
+        toggleSQLDrawer();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [toggleSQLDrawer]);
 
   const handleAddTable = () => {
     const newTable = {
@@ -62,68 +84,85 @@ const TopNavBar = () => {
     }
   };
 
-  const generateSQL = () => {
+  const buildSQL = () => {
+    // Topological sort to handle dependency chains
+    const sortNodesByDependencies = () => {
+      const nodeMap = new Map(nodes.map(n => [n.data.label, n]));
+      const visited = new Set<string>();
+      const sorted: typeof nodes = [];
+      
+      const visit = (tableName: string) => {
+        if (visited.has(tableName)) return;
+        visited.add(tableName);
+        const node = nodeMap.get(tableName);
+        if (!node) return;
+        const columns = Array.isArray(node.data.columns) ? node.data.columns : [];
+        columns.forEach((col: Column) => {
+          if (col.isForeignKey && col.foreignKeyTable) {
+            visit(col.foreignKeyTable);
+          }
+        });
+        sorted.push(node);
+      };
+      
+      nodes.forEach(node => visit(node.data.label));
+      return sorted;
+    };
+    
+    const sortedNodes = sortNodesByDependencies();
     let generatedQuery = "";
-    nodes.forEach((node) => {
+
+    sortedNodes.forEach((node) => {
       const tableName = node.data.label;
       const columns = Array.isArray(node.data.columns) ? node.data.columns : [];
-      
       if (columns.length === 0 || !tableName) return;
-      
-      let createTableQuery = `CREATE TABLE ${tableName} (\n`;
+
+      let createTableQuery = `CREATE TABLE \`${tableName}\` (\n`;
       const columnDefinitions: string[] = [];
       const primaryKeys: string[] = [];
-      
+      const foreignKeys: string[] = [];
+
       columns.forEach((col: Column) => {
         if (!col.name || !col.dataType) return;
-        
-        let columnDef = `  ${col.name} ${col.dataType}`;
-        
-        if (col.size) {
-          columnDef += `(${col.size})`;
-        }
-        
-        if (!col.isNullable) {
-          columnDef += ' NOT NULL';
-        }
-        
-        if (col.isUnique && !col.isPrimaryKey) {
-          columnDef += ' UNIQUE';
-        }
-        
-        if (col.isAutoIncrement) {
-          columnDef += ' AUTO_INCREMENT';
-        }
-        
-        if (col.defaultValue) {
-          columnDef += ` DEFAULT ${col.defaultValue}`;
-        }
-        
+        let columnDef = `  \`${col.name}\` ${col.dataType}`;
+        if (col.size) columnDef += `(${col.size})`;
+        if (!col.isNullable) columnDef += ' NOT NULL';
+        if (col.isUnique && !col.isPrimaryKey) columnDef += ' UNIQUE';
+        if (col.isAutoIncrement) columnDef += ' AUTO_INCREMENT';
+        if (col.defaultValue) columnDef += ` DEFAULT ${col.defaultValue}`;
         columnDefinitions.push(columnDef);
-        
-        if (col.isPrimaryKey) {
-          primaryKeys.push(col.name);
+        if (col.isPrimaryKey) primaryKeys.push(`\`${col.name}\``);
+        if (col.isForeignKey && col.foreignKeyTable && col.foreignKeyColumn) {
+          foreignKeys.push(
+            `  FOREIGN KEY (\`${col.name}\`) REFERENCES \`${col.foreignKeyTable}\`(\`${col.foreignKeyColumn}\`)`
+          );
         }
       });
-      
+
       createTableQuery += columnDefinitions.join(',\n');
-      
       if (primaryKeys.length > 0) {
         createTableQuery += `,\n  PRIMARY KEY (${primaryKeys.join(', ')})`;
       }
-      
+      if (foreignKeys.length > 0) {
+        createTableQuery += ',\n' + foreignKeys.join(',\n');
+      }
       createTableQuery += "\n);\n\n";
       generatedQuery += createTableQuery;
     });
-    
-    setGeneratedSQL(generatedQuery);
+
+    return generatedQuery;
+  };
+
+  const generateSQL = () => {
+    const sql = buildSQL();
+    setGeneratedSQL(sql);
     toggleSQLDrawer();
   };
 
   const handleExport = () => {
-    generateSQL();
-    // Create download link
-    const blob = new Blob([useSQLTables.getState().generatedSQL], { type: 'text/plain' });
+    const sql = buildSQL();
+    setGeneratedSQL(sql);
+    const blob = new Blob([sql], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -134,8 +173,42 @@ const TopNavBar = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleSaveProject = () => {
+    const data = { nodes, edges, projectName };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${projectName.replace(/\s+/g, '-').toLowerCase()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleLoadProject = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target?.result as string);
+        if (data.nodes && data.edges && data.projectName) {
+          loadProject(data);
+        } else {
+          alert('Invalid project file.');
+        }
+      } catch {
+        alert('Failed to parse project file.');
+      }
+    };
+    reader.readAsText(file);
+    // Reset input so the same file can be re-loaded
+    e.target.value = '';
+  };
+
   return (
-    <div className="py-3 bg-neutral-900  border-b border-neutral-700 flex items-center justify-between px-4 shadow-md">
+    <div className="py-3 bg-neutral-900 border-b border-neutral-700 flex items-center justify-between px-4 shadow-md">
       {/* Left section */}
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
@@ -160,8 +233,9 @@ const TopNavBar = () => {
           />
         ) : (
           <button
-            onClick={() => setIsEditingName(true)}
+            onClick={() => { setTempName(projectName); setIsEditingName(true); }}
             className="text-sm text-neutral-300 hover:text-white px-2 py-1 rounded hover:bg-neutral-800 transition-colors cursor-pointer"
+            title="Click to rename project"
           >
             {projectName}
           </button>
@@ -173,7 +247,7 @@ const TopNavBar = () => {
         <Button
           onClick={handleAddTable}
           size="default"
-          variant={'secondary'}
+          variant="secondary"
           className="cursor-pointer"
         >
           <Table2 className="h-4 w-4" />
@@ -191,17 +265,43 @@ const TopNavBar = () => {
         </Button>
         
         <div className="w-px h-6 bg-neutral-700 mx-1" />
+
+        <Button
+          onClick={handleSaveProject}
+          size="icon"
+          variant="ghost"
+          className="text-neutral-300 hover:text-white hover:bg-neutral-800"
+          title="Save project as JSON"
+        >
+          <Save className="h-4 w-4" />
+        </Button>
+
+        <Button
+          onClick={() => fileInputRef.current?.click()}
+          size="icon"
+          variant="ghost"
+          className="text-neutral-300 hover:text-white hover:bg-neutral-800"
+          title="Load project from JSON"
+        >
+          <Upload className="h-4 w-4" />
+        </Button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          className="hidden"
+          onChange={handleLoadProject}
+        />
         
         <Button
           onClick={handleExport}
           size="icon"
           variant="ghost"
           className="text-neutral-300 hover:text-white hover:bg-neutral-800"
-          title="Export SQL"
+          title="Export SQL file"
         >
           <Download className="h-4 w-4" />
         </Button>
-        
         
         <div className="w-px h-6 bg-neutral-700 mx-1" />
         
