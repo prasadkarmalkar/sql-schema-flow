@@ -1,73 +1,70 @@
-# React + TypeScript + Vite
+# SQL Schema Flow
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A visual SQL schema designer built with React and React Flow. Design database tables, define columns with full type support, establish foreign key relationships, and generate SQL — all from an interactive drag-and-drop canvas.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Visual Table Designer** — Create and arrange tables on an infinite canvas with snap-to-grid support
+- **Column Editor** — Add columns with data type, size, primary key, foreign key, nullable, unique, auto-increment, and default value options
+- **Foreign Key Relationships** — Connect tables visually to define foreign key constraints; edges are drawn automatically
+- **SQL Generation** — Generate `CREATE TABLE` statements with a single click, with syntax highlighting in a resizable bottom drawer
+- **Project Management** — Save/load projects as JSON, rename your project inline, and download generated `.sql` files
+- **Properties Panel** — Select any table or column to inspect and edit its properties in the right sidebar
+- **Search & Navigate** — Filter tables in the left sidebar and click to pan/zoom to them on the canvas
+- **Dark Mode** — Toggle between light and dark themes
+- **Keyboard Shortcuts** — `⌘J` / `Ctrl+J` to toggle the SQL drawer
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **React 19** + **TypeScript**
+- **Vite** — Dev server and bundler
+- **React Flow (@xyflow/react)** — Node-based canvas
+- **Zustand** — Lightweight state management
+- **Tailwind CSS 4** — Utility-first styling
+- **Radix UI** — Accessible select and slot primitives
+- **Lucide React** — Icon library
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+```bash
+# Clone the repository
+git clone https://github.com/prasadkarmalkar/sql-schema-flow.git
+cd sql-schema-flow
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+# Install dependencies
+npm install
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Start the dev server
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Scripts
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the Vite dev server |
+| `npm run build` | Type-check and build for production |
+| `npm run preview` | Preview the production build |
+| `npm run lint` | Run ESLint |
+
+## Project Structure
+
+```
+src/
+├── App.tsx                # Main app with React Flow canvas
+├── components/
+│   ├── TopNavBar.tsx      # Project name, add table, generate SQL, save/load, theme toggle
+│   ├── LeftSidebar.tsx    # Searchable table list with pan-to-table
+│   ├── RightSidebar.tsx   # Properties panel for selected table/column
+│   ├── TableNode.tsx      # Custom React Flow node for a database table
+│   ├── BottomDrawer.tsx   # SQL output drawer with syntax highlighting
+│   └── ui/                # Reusable UI primitives (Button, Input, Select)
+├── data/
+│   └── data.tsx           # SQL data type definitions
+├── stores/
+│   └── sql-tables.ts      # Zustand store for tables, edges, and app state
+└── lib/
+    └── utils.ts           # Utility helpers
 ```
